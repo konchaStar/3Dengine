@@ -3,6 +3,7 @@ package com.example._3dgraphics;
 import com.example._3dgraphics.graphics.Graphics;
 import com.example._3dgraphics.math.Matrix4x4;
 import com.example._3dgraphics.math.Triangle;
+import com.example._3dgraphics.math.Vec4d;
 import com.sun.prism.paint.Color;
 
 import javax.swing.*;
@@ -40,7 +41,7 @@ public class App extends JComponent implements ActionListener, KeyListener, Mous
         frame.addKeyListener(app);
         frame.addMouseWheelListener(app);
         app.cube = new Mesh();
-        app.cube.loadMesh("objects/Doom.obj");
+        app.cube.loadMesh("objects/cube.obj");
         app.timer.start();
     }
 
@@ -55,13 +56,15 @@ public class App extends JComponent implements ActionListener, KeyListener, Mous
         graphics.clear(Color.WHITE.getIntArgbPre());
         modelTriangles.clear();
         Matrix4x4 model = Matrix4x4.getRotationYMatrix(angle)
-                .multiply(Matrix4x4.getTranslation(0, 0, 700))
+                .multiply(Matrix4x4.getTranslation(0, 0, 4))
                 .multiply(Matrix4x4.getCameraMatrix(cameraModel))
                 .multiply(Matrix4x4.getProjectionMatrix(90, (double) WINDOW_HEIGHT / WINDOW_WIDTH, 0.1, 10))
                 .multiply(Matrix4x4.getScreenMatrix(WINDOW_WIDTH, WINDOW_HEIGHT));
         for (Triangle tri : cube.getTris()) {
-            graphics.drawTriangle(tri.multiply(model), 0);
+            graphics.rasterTriangle(tri.multiply(model), Color.GREEN.getIntArgbPre());
         }
+//        graphics.rasterTriangle(new Triangle(new Vec4d(300, 200, 0), new Vec4d(200, 100, 0), new Vec4d(500, 100, 0)),
+//                Color.GREEN.getIntArgbPre());
         g.drawImage(graphics.getBuffer(), 0, 0, null);
     }
 
