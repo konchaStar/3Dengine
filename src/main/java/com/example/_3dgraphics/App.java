@@ -7,6 +7,7 @@ import com.example._3dgraphics.math.Vec4d;
 import com.sun.prism.paint.Color;
 
 import javax.swing.*;
+import java.awt.*;
 import java.awt.event.*;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
@@ -25,13 +26,12 @@ public class App extends JComponent implements ActionListener, KeyListener, Mous
     private Mesh cube;
     private List<Triangle> modelTriangles = new ArrayList<>();
     private double angle = 0;
-    private Matrix4x4 cameraModel = Matrix4x4.getIdentity();
+    private Camera camera;
+    private Robot input;
 
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args) throws IOException, AWTException {
         BufferedImage buffer = new BufferedImage(WINDOW_WIDTH + 1, WINDOW_HEIGHT + 1, BufferedImage.TYPE_INT_RGB);
         App app = new App();
-        app.graphics = new Graphics(buffer, WINDOW_WIDTH, WINDOW_HEIGHT);
-        app.prev = System.currentTimeMillis();
         frame = new JFrame();
         frame.setVisible(true);
         frame.setDefaultCloseOperation(frame.EXIT_ON_CLOSE);
@@ -40,9 +40,19 @@ public class App extends JComponent implements ActionListener, KeyListener, Mous
         frame.add(app);
         frame.addKeyListener(app);
         frame.addMouseWheelListener(app);
-        app.cube = new Mesh();
-        app.cube.loadMesh("objects/cube.obj");
-        app.timer.start();
+        app.init(buffer);
+    }
+
+    private void init(BufferedImage buffer) throws IOException, AWTException {
+        input = new Robot();
+        graphics = new Graphics(buffer, WINDOW_WIDTH, WINDOW_HEIGHT);
+        prev = System.currentTimeMillis();
+        camera = new Camera(WINDOW_WIDTH, WINDOW_HEIGHT, 90, 0.1, 10);
+        cube = new Mesh();
+        cube.loadMesh("objects/cube.obj");
+        input.mouseMove(WINDOW_WIDTH / 2, WINDOW_HEIGHT / 2);
+        timer.start();
+
     }
 
     @Override
@@ -55,21 +65,24 @@ public class App extends JComponent implements ActionListener, KeyListener, Mous
         }
         graphics.clear(Color.WHITE.getIntArgbPre());
         modelTriangles.clear();
-        Matrix4x4 model = Matrix4x4.getRotationYMatrix(angle)
-                .multiply(Matrix4x4.getTranslation(0, 0, 4))
-                .multiply(Matrix4x4.getCameraMatrix(cameraModel))
+        Matrix4x4 model = Matrix4x4.getTranslation(0, 0, 3)
+                .multiply(camera.getCameraMatrix())
                 .multiply(Matrix4x4.getProjectionMatrix(90, (double) WINDOW_HEIGHT / WINDOW_WIDTH, 0.1, 10))
                 .multiply(Matrix4x4.getScreenMatrix(WINDOW_WIDTH, WINDOW_HEIGHT));
         for (Triangle tri : cube.getTris()) {
-            graphics.rasterTriangle(tri.multiply(model), Color.GREEN.getIntArgbPre());
+            graphics.drawTriangle(tri.multiply(model), 0);
         }
-//        graphics.rasterTriangle(new Triangle(new Vec4d(300, 200, 0), new Vec4d(200, 100, 0), new Vec4d(500, 100, 0)),
-//                Color.GREEN.getIntArgbPre());
+
         g.drawImage(graphics.getBuffer(), 0, 0, null);
     }
 
     @Override
     public void actionPerformed(ActionEvent e) {
+        Point position = MouseInfo.getPointerInfo().getLocation();
+        int dx = position.x - WINDOW_WIDTH / 2;
+        double delta = (System.currentTimeMillis() - prev) / 1000.0;
+        camera.rotateY(delta * 10 * dx);
+        input.mouseMove(WINDOW_WIDTH / 2, WINDOW_HEIGHT / 2);
         repaint();
     }
 
@@ -80,7 +93,32 @@ public class App extends JComponent implements ActionListener, KeyListener, Mous
 
     @Override
     public void keyPressed(KeyEvent e) {
-
+        double delta = (System.currentTimeMillis() - prev) / 1000.0;
+        if (e.getKeyCode() == KeyEvent.VK_W) {
+            Vec4d direction = camera.lookAt().multiply(delta * 10);
+            camera.translate(direction);
+        }
+        if (e.getKeyCode() == KeyEvent.VK_S) {
+            Vec4d direction = camera.lookAt().multiply(-delta * 10);
+            camera.translate(direction);
+        }
+        if (e.getKeyCode() == KeyEvent.VK_A) {
+            Vec4d direction = camera.right().multiply(-delta * 10);
+            camera.translate(direction);
+        }
+        if (e.getKeyCode() == KeyEvent.VK_D) {
+            Vec4d direction = camera.right().multiply(delta * 10);
+            camera.translate(direction);
+        }
+        if (e.getKeyCode() == KeyEvent.VK_SPACE) {
+            camera.translate(new Vec4d(0, 1, 0).multiply(delta * 10));
+        }
+        if(e.getKeyCode() == KeyEvent.VK_SHIFT) {
+            camera.translate(new Vec4d(0, 1, 0).multiply(-delta * 10));
+        }
+        if (e.getKeyCode() == KeyEvent.VK_ESCAPE) {
+            System.exit(0);
+        }
     }
 
     @Override

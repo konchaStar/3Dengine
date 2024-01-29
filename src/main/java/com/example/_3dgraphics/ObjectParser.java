@@ -12,7 +12,7 @@ public class ObjectParser {
     private List<Triangle> triangles = new ArrayList<>();
 
     public void parse(String line) {
-        String[] data = line.split(" ");
+        String[] data = line.split(" +");
         switch (data[0]) {
             case "v": {
                 parseVertex(Arrays.copyOfRange(data, 1, data.length));

@@ -27,7 +27,9 @@ public class Graphics {
 
     public void line(int x1, int y1, int x2, int y2, int color) {
         if (x1 == x2 && y1 == y2) {
-            buffer.setRGB(x1, y1, color);
+            if (Math.round(x1) >= 0 && Math.round(x1) < width - 1 && Math.round(y1) >= 0 && Math.round(y1) < height - 1) {
+                buffer.setRGB(x1, y1, color);
+            }
             return;
         }
         double l = Math.max(Math.abs(x1 - x2), Math.abs(y1 - y2));
@@ -37,7 +39,9 @@ public class Graphics {
         double dx = (x2 - x1) / l;
         double dy = (y2 - y1) / l;
         do {
-            buffer.setRGB((int) Math.round(x), (int) Math.round(y), color);
+            if (Math.round(x) >= 0 && Math.round(x) < width - 1 && Math.round(y) >= 0 && Math.round(y) < height - 1) {
+                buffer.setRGB((int) Math.round(x), (int) Math.round(y), color);
+            }
             x += dx;
             y += dy;
         } while ((x != x2 || x1 == x2) && (y != y2 || y1 == y2));

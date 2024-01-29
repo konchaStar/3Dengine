@@ -33,6 +33,24 @@ public class Vec4d {
     public double dot(Vec4d vec) {
         return x * vec.x + y * vec.y + z * vec.z;
     }
+
+    public Vec4d multiply(double n) {
+        return new Vec4d(x * n, y * n, z * n);
+    }
+
+    public Vec4d add(Vec4d vec) {
+        return new Vec4d(x + vec.x, y + vec.y, z + vec.z);
+    }
+
+    public Vec4d cross(Vec4d vec) {
+        return new Vec4d(y * vec.z - z * vec.y, x * vec.z - z * vec.x, x * vec.y - y * vec.x);
+    }
+
+    public Vec4d normalize() {
+        double magnitude = Math.sqrt(sqr());
+        return new Vec4d(x / magnitude, y / magnitude, z / magnitude);
+    }
+
     public double getX() {
         return x;
     }

@@ -26,6 +26,6 @@ public class Triangle {
     }
 
     private void calculateNormal() {
-
+        normal = points[0].cross(points[1]).normalize();
     }
 }
