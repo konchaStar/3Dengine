@@ -49,7 +49,7 @@ public class App extends JComponent implements ActionListener, KeyListener, Mous
         prev = System.currentTimeMillis();
         camera = new Camera(WINDOW_WIDTH, WINDOW_HEIGHT, 90, 0.1, 10);
         cube = new Mesh();
-        cube.loadMesh("objects/gourd.obj");
+        cube.loadMesh("objects/cube.obj");
         input.mouseMove(WINDOW_WIDTH / 2, WINDOW_HEIGHT / 2);
         timer.start();
     }
@@ -65,7 +65,7 @@ public class App extends JComponent implements ActionListener, KeyListener, Mous
         graphics.clear(Color.WHITE.getIntArgbPre());
         modelTriangles.clear();
         Matrix4x4 model = Matrix4x4.getRotationYMatrix(180)
-                        .multiply(Matrix4x4.getTranslation(0,-50,50));
+                        .multiply(Matrix4x4.getTranslation(0,0, 4));
         Matrix4x4 projection = camera.getCameraMatrix()
                 .multiply(Matrix4x4.getProjectionMatrix(90, (double) WINDOW_HEIGHT / WINDOW_WIDTH, 0.1, 10))
                 .multiply(Matrix4x4.getScreenMatrix(WINDOW_WIDTH, WINDOW_HEIGHT));
@@ -73,7 +73,7 @@ public class App extends JComponent implements ActionListener, KeyListener, Mous
             Triangle triangle = tri.multiply(model);
             double dot = triangle.getNormal().dot(camera.getPosition().sub(triangle.getPoints()[0]).normalize());
             if(dot < 0) {
-                graphics.drawTriangle(tri.multiply(model.multiply(projection)), 0);
+                graphics.rasterTriangle(triangle.multiply(projection), Color.GREEN.getIntArgbPre());
             }
         }
 
