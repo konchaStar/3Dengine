@@ -8,6 +8,7 @@ public class Triangle {
         points[0] = p1;
         points[1] = p2;
         points[2] = p3;
+        calculateNormal();
     }
 
     public Triangle multiply(Matrix4x4 matrix4x4) {
@@ -26,6 +27,16 @@ public class Triangle {
     }
 
     private void calculateNormal() {
-        normal = points[0].cross(points[1]).normalize();
+        Vec4d v1 = points[2].sub(points[0]);
+        Vec4d v2 = points[1].sub(points[0]);
+        normal = v1.cross(v2).normalize();
+    }
+
+    public Vec4d getNormal() {
+        return normal;
+    }
+
+    public void setNormal(Vec4d normal) {
+        this.normal = normal;
     }
 }

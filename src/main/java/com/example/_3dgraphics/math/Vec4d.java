@@ -51,6 +51,10 @@ public class Vec4d {
         return new Vec4d(x / magnitude, y / magnitude, z / magnitude);
     }
 
+    public Vec4d sub(Vec4d vec) {
+        return new Vec4d(x - vec.x, y - vec.y, z - vec.z);
+    }
+
     public double getX() {
         return x;
     }

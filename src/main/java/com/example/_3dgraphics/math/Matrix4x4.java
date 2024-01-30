@@ -55,6 +55,18 @@ public class Matrix4x4 {
         });
     }
 
+    public static Matrix4x4 getRotationMatrix(Vec4d vec, double angle) {
+        double cos = Math.cos(angle / 180 * Math.PI);
+        double sin = Math.sin(angle / 180 * Math.PI);
+
+        return new Matrix4x4(new double[][]{
+                {cos + (1 - cos) * vec.getX() * vec.getX(), (1.0 - cos) * vec.getX() * vec.getY() + sin * vec.getZ(), (1.0 - cos) * vec.getZ() * vec.getX() - sin * vec.getY(), 0},
+                {(1 - cos) * vec.getX() * vec.getY() - sin * vec.getZ(), cos + (1.0 - cos) * vec.getY() * vec.getY(), (1.0 - cos) * vec.getZ() * vec.getY() + sin * vec.getX(), 0},
+                {(1.0 - cos) * vec.getX() * vec.getZ() + sin * vec.getY(), (1.0 - cos) * vec.getY() * vec.getZ() - sin * vec.getX(), cos + (1.0 - cos) * vec.getZ() * vec.getZ(), 0},
+                {0, 0, 0, 1}
+        });
+    }
+
     public static Matrix4x4 getProjectionMatrix(double fovDeg, double aspectRatio, double zNear, double zFar) {
         double fovRad = 1.0 / Math.tan(fovDeg * 0.5 / 180 * Math.PI);
         return new Matrix4x4(new double[][]{

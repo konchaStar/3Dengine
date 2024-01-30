@@ -52,20 +52,20 @@ public class App extends JComponent implements ActionListener, KeyListener, Mous
         cube.loadMesh("objects/cube.obj");
         input.mouseMove(WINDOW_WIDTH / 2, WINDOW_HEIGHT / 2);
         timer.start();
-
     }
 
     @Override
     public void paint(java.awt.Graphics g) {
         angle += (System.currentTimeMillis() - prev) / 1000.0 * 90;
-        frame.setTitle(Integer.toString((int) (1000 / (System.currentTimeMillis() - prev))));
+        frame.setTitle(String.format("Press esc to exit %d fps", (int) (1000 / (System.currentTimeMillis() - prev))));
         prev = System.currentTimeMillis();
         if (angle > 360) {
             angle -= 360;
         }
         graphics.clear(Color.WHITE.getIntArgbPre());
         modelTriangles.clear();
-        Matrix4x4 model = Matrix4x4.getTranslation(0, 0, 3)
+        Matrix4x4 model = Matrix4x4.getRotationYMatrix(angle)
+                .multiply(Matrix4x4.getTranslation(0, 0, 4))
                 .multiply(camera.getCameraMatrix())
                 .multiply(Matrix4x4.getProjectionMatrix(90, (double) WINDOW_HEIGHT / WINDOW_WIDTH, 0.1, 10))
                 .multiply(Matrix4x4.getScreenMatrix(WINDOW_WIDTH, WINDOW_HEIGHT));
@@ -80,8 +80,10 @@ public class App extends JComponent implements ActionListener, KeyListener, Mous
     public void actionPerformed(ActionEvent e) {
         Point position = MouseInfo.getPointerInfo().getLocation();
         int dx = position.x - WINDOW_WIDTH / 2;
+        int dy = position.y - WINDOW_HEIGHT / 2;
         double delta = (System.currentTimeMillis() - prev) / 1000.0;
-        camera.rotateY(delta * 10 * dx);
+        camera.rotateY(0.2 * dx);
+        camera.rotate(camera.right(), 0.2 * dy);
         input.mouseMove(WINDOW_WIDTH / 2, WINDOW_HEIGHT / 2);
         repaint();
     }

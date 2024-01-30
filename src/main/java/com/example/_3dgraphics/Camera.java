@@ -50,6 +50,17 @@ public class Camera {
         model = model.multiply(Matrix4x4.getRotationYMatrix(angle));
     }
 
+    public void rotateX(double angle) {
+        model = model.multiply(Matrix4x4.getRotationXMatrix(angle));
+    }
+
+    public void rotateZ(double angle) {
+        model = model.multiply(Matrix4x4.getRotationZMatrix(angle));
+    }
+
+    public void rotate(Vec4d vec, double angle) {
+        model = model.multiply(Matrix4x4.getRotationMatrix(vec, angle));
+    }
 
     public Matrix4x4 getModel() {
         return model;
@@ -105,5 +116,13 @@ public class Camera {
 
     public void setzFar(double zFar) {
         this.zFar = zFar;
+    }
+
+    public Vec4d getPosition() {
+        return position;
+    }
+
+    public void setPosition(Vec4d position) {
+        this.position = position;
     }
 }
