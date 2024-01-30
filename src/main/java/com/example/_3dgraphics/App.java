@@ -49,7 +49,7 @@ public class App extends JComponent implements ActionListener, KeyListener, Mous
         prev = System.currentTimeMillis();
         camera = new Camera(WINDOW_WIDTH, WINDOW_HEIGHT, 90, 0.1, 10);
         cube = new Mesh();
-        cube.loadMesh("objects/girl.obj");
+        cube.loadMesh("objects/gourd.obj");
         input.mouseMove(WINDOW_WIDTH / 2, WINDOW_HEIGHT / 2);
         timer.start();
     }

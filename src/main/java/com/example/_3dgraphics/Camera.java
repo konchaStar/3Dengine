@@ -1,7 +1,8 @@
 package com.example._3dgraphics;
-
+import com.example._3dgraphics.math.Vec4d;
 import com.example._3dgraphics.math.Matrix4x4;
 import com.example._3dgraphics.math.Vec4d;
+
 
 public class Camera {
     private Matrix4x4 model = Matrix4x4.getIdentity();
