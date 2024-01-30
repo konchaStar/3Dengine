@@ -49,7 +49,7 @@ public class App extends JComponent implements ActionListener, KeyListener, Mous
         prev = System.currentTimeMillis();
         camera = new Camera(WINDOW_WIDTH, WINDOW_HEIGHT, 90, 0.1, 10);
         cube = new Mesh();
-        cube.loadMesh("objects/cube.obj");
+        cube.loadMesh("objects/girl.obj");
         input.mouseMove(WINDOW_WIDTH / 2, WINDOW_HEIGHT / 2);
         timer.start();
     }
@@ -64,13 +64,17 @@ public class App extends JComponent implements ActionListener, KeyListener, Mous
         }
         graphics.clear(Color.WHITE.getIntArgbPre());
         modelTriangles.clear();
-        Matrix4x4 model = Matrix4x4.getRotationYMatrix(angle)
-                .multiply(Matrix4x4.getTranslation(0, 0, 4))
-                .multiply(camera.getCameraMatrix())
+        Matrix4x4 model = Matrix4x4.getRotationYMatrix(180)
+                        .multiply(Matrix4x4.getTranslation(0,-50,50));
+        Matrix4x4 projection = camera.getCameraMatrix()
                 .multiply(Matrix4x4.getProjectionMatrix(90, (double) WINDOW_HEIGHT / WINDOW_WIDTH, 0.1, 10))
                 .multiply(Matrix4x4.getScreenMatrix(WINDOW_WIDTH, WINDOW_HEIGHT));
         for (Triangle tri : cube.getTris()) {
-            graphics.drawTriangle(tri.multiply(model), 0);
+            Triangle triangle = tri.multiply(model);
+            double dot = triangle.getNormal().dot(camera.getPosition().sub(triangle.getPoints()[0]).normalize());
+            if(dot < 0) {
+                graphics.drawTriangle(tri.multiply(model.multiply(projection)), 0);
+            }
         }
 
         g.drawImage(graphics.getBuffer(), 0, 0, null);

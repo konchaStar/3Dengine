@@ -43,7 +43,7 @@ public class Vec4d {
     }
 
     public Vec4d cross(Vec4d vec) {
-        return new Vec4d(y * vec.z - z * vec.y, x * vec.z - z * vec.x, x * vec.y - y * vec.x);
+        return new Vec4d(y * vec.z - z * vec.y, z * vec.x - x * vec.z, x * vec.y - y * vec.x);
     }
 
     public Vec4d normalize() {
