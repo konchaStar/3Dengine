@@ -49,7 +49,7 @@ public class App extends JComponent implements ActionListener, KeyListener, Mous
         prev = System.currentTimeMillis();
         camera = new Camera(WINDOW_WIDTH, WINDOW_HEIGHT, 90, 0.1, 10);
         cube = new Mesh();
-        cube.loadMesh("objects/cube.obj");
+        cube.loadMesh("objects/obj.obj");
         input.mouseMove(WINDOW_WIDTH / 2, WINDOW_HEIGHT / 2);
         timer = new Timer(5, this);
         timer.start();
@@ -66,7 +66,7 @@ public class App extends JComponent implements ActionListener, KeyListener, Mous
         graphics.clear(new Color(255, 255, 255));
         modelTriangles.clear();
         Matrix4x4 model = Matrix4x4.getRotationYMatrix(90)
-                .multiply(Matrix4x4.getTranslation(0, 0, 5));
+                .multiply(Matrix4x4.getTranslation(0, 0, 100));
         Matrix4x4 projection = camera.getCameraMatrix()
                 .multiply(Matrix4x4.getProjectionMatrix(90, (double) WINDOW_HEIGHT / WINDOW_WIDTH, 0.1, 10))
                 .multiply(Matrix4x4.getScreenMatrix(WINDOW_WIDTH, WINDOW_HEIGHT));
@@ -76,8 +76,8 @@ public class App extends JComponent implements ActionListener, KeyListener, Mous
             double dot = triangle.getNormal().dot(camera.getPosition().sub(triangle.getPoints()[0]).normalize());
             if (dot < 0) {
                 //double intensity = Math.max(0.1, triangle.getNormal().dot(light));
-                double intensity = Math.max(0.1, -dot);
-                graphics.rasterTriangle(tri.multiply(model.multiply(projection)), new Color(
+                double intensity = Math.max(0.2, -dot);
+                graphics.rasterTriangle(triangle.multiply(projection), new Color(
                         (int) (color.getRed() * intensity),
                         (int) (color.getGreen() * intensity),
                         (int) (color.getBlue() * intensity)

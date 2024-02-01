@@ -26,7 +26,7 @@ public class Graphics {
         for (int i = 0; i < width; i++) {
             for (int j = 0; j < height; j++) {
                 buffer.setRGB(i, j, rgb);
-                zBuffer[i][j] = 2;
+                zBuffer[i][j] = 100;
             }
         }
     }
@@ -36,8 +36,14 @@ public class Graphics {
         vec1 = new Vec4d((int) vec1.getX(), (int) vec1.getY(), vec1.getZ());
         vec2 = new Vec4d((int) vec2.getX(), (int) vec2.getY(), vec2.getZ());
         if (vec1.getX() == vec2.getX() && vec1.getY() == vec2.getY()) {
-            if (Math.round(vec1.getX()) >= 0 && Math.round(vec1.getX()) < width - 1 && Math.round(vec1.getY()) >= 0 && Math.round(vec1.getY()) < height - 1) {
-                buffer.setRGB((int) Math.round(vec1.getX()), (int) Math.round(vec1.getY()), rgb);
+            int posX = (int) Math.round(vec1.getX());
+            int posY = (int) Math.round(vec1.getY());
+            if (posX >= 0 && posX < width - 1 && posY >= 0 && posY < height - 1) {
+                double z = Math.min(vec1.getZ(), vec2.getZ());
+                if (z < zBuffer[posX][posY]) {
+                    buffer.setRGB(posX, posY, rgb);
+                    zBuffer[posX][posY] = z;
+                }
             }
             return;
         }
@@ -111,7 +117,7 @@ public class Graphics {
                 .map(vec -> new Vec4d((int) vec.getX(), (int) vec.getY(), vec.getZ()))
                 .sorted((vec1, vec2) -> (int) Math.signum(Math.ceil(vec1.getY() - vec2.getY())))
                 .toArray(Vec4d[]::new);
-        drawTriangle(triangle, color);
+        //drawTriangle(triangle, color);
         List<Vec4d> points1 = getDrawableVectors(points[0], points[1]);
         List<Vec4d> points2 = getDrawableVectors(points[1], points[2]);
         List<Vec4d> points3 = getDrawableVectors(points[0], points[2]);
