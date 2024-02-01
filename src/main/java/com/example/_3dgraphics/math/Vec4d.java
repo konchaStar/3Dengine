@@ -18,7 +18,7 @@ public class Vec4d {
         double y = this.x * matrix[0][1] + this.y * matrix[1][1] + this.z * matrix[2][1] + this.w * matrix[3][1];
         double z = this.x * matrix[0][2] + this.y * matrix[1][2] + this.z * matrix[2][2] + this.w * matrix[3][2];
         double w = this.x * matrix[0][3] + this.y * matrix[1][3] + this.z * matrix[2][3] + this.w * matrix[3][3];
-        if(w != 0) {
+        if (w != 0) {
             x /= w;
             y /= w;
             z /= w;

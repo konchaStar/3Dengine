@@ -1,39 +1,39 @@
 package com.example._3dgraphics.graphics;
 
-import com.example._3dgraphics.ZBuffer;
 import com.example._3dgraphics.math.Triangle;
 import com.example._3dgraphics.math.Vec4d;
 
 import java.awt.image.BufferedImage;
-import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.*;
 
 public class Graphics {
     private BufferedImage buffer;
     private int width;
     private int height;
-    private ZBuffer zBuffer;
+    private double[][] zBuffer;
 
     public Graphics(BufferedImage buffer, int width, int height) {
         this.buffer = buffer;
         this.width = width;
         this.height = height;
-        this.zBuffer = new ZBuffer(width, height);
+        this.zBuffer = new double[width][height];
     }
 
     public void clear(int color) {
         for (int i = 0; i < width; i++) {
             for (int j = 0; j < height; j++) {
                 buffer.setRGB(i, j, color);
-
+                zBuffer[i][j] = 2;
             }
         }
     }
 
-    public void lineZBuf(Vec4d vec1, Vec4d vec2, int color) {
-        if(vec1.getX() == vec2.getX() && vec1.getY() == vec2.getY()){
-            if (Math.round(vec1.getX()) >= 0 && Math.round(vec1.getX()) < width - 1 && Math.round(vec1.getY()) >= 0 && Math.round(vec1.getY()) < height - 1){
-                buffer.setRGB((int)Math.round(vec1.getX()), (int)Math.round(vec1.getY()), color);
+    public void line(Vec4d vec1, Vec4d vec2, int color) {
+        vec1 = new Vec4d((int) vec1.getX(), (int) vec1.getY(), vec1.getZ());
+        vec2 = new Vec4d((int) vec2.getX(), (int) vec2.getY(), vec2.getZ());
+        if (vec1.getX() == vec2.getX() && vec1.getY() == vec2.getY()) {
+            if (Math.round(vec1.getX()) >= 0 && Math.round(vec1.getX()) < width - 1 && Math.round(vec1.getY()) >= 0 && Math.round(vec1.getY()) < height - 1) {
+                buffer.setRGB((int) Math.round(vec1.getX()), (int) Math.round(vec1.getY()), color);
             }
             return;
         }
@@ -44,22 +44,24 @@ public class Graphics {
         double dx = (vec2.getX() - vec1.getX()) / l;
         double dy = (vec2.getY() - vec1.getY()) / l;
         double dz = (vec2.getZ() - vec1.getZ()) / l;
-        do {
-            if (Math.round(x) >= 0 && Math.round(x) < width - 1 && Math.round(y) >= 0 && Math.round(y) < height - 1 && z < zBuffer.getZ((int)Math.round(x),(int)Math.round(y))) {
-                buffer.setRGB((int) Math.round(x), (int) Math.round(y), color);
-                zBuffer.setZ((int)Math.round(x),(int)Math.round(y), z);
+        for (int i = 0; i <= l; i++) {
+            if (Math.round(x) >= 0 && Math.round(x) < width - 1 && Math.round(y) >= 0 && Math.round(y) < height - 1) {
+                int posX = (int) Math.round(x);
+                int posY = (int) Math.round(y);
+                if (z < zBuffer[posX][posY]) {
+                    buffer.setRGB(posX, posY, color);
+                    zBuffer[posX][posY] = z;
+                }
             }
             x += dx;
             y += dy;
             z += dz;
-        } while ((x != vec2.getX() || vec1.getX() == vec2.getX()) && (y != vec2.getY() || vec1.getY() == vec2.getY()));
-
-
+        }
     }
 
     public void line(int x1, int y1, int x2, int y2, int color) {
         if (x1 == x2 && y1 == y2) {
-            if (Math.round(x1) >= 0 && Math.round(x1) < width - 1 && Math.round(y1) >= 0 && Math.round(y1) < height - 1) {
+            if (x1 >= 0 && x1 < width - 1 && y1 >= 0 && y1 < height - 1) {
                 buffer.setRGB(x1, y1, color);
             }
             return;
@@ -70,41 +72,53 @@ public class Graphics {
         double y = y1;
         double dx = (x2 - x1) / l;
         double dy = (y2 - y1) / l;
-        do {
+        for (int i = 0; i <= l; i++) {
             if (Math.round(x) >= 0 && Math.round(x) < width - 1 && Math.round(y) >= 0 && Math.round(y) < height - 1) {
                 buffer.setRGB((int) Math.round(x), (int) Math.round(y), color);
             }
             x += dx;
             y += dy;
-        } while ((x != x2 || x1 == x2) && (y != y2 || y1 == y2));
+        }
     }
 
     public void drawTriangle(Triangle triangle, int color) {
         Vec4d[] vertices = triangle.getPoints();
-        line((int) vertices[0].getX(), (int) vertices[0].getY(), (int) vertices[1].getX(), (int) vertices[1].getY(), color);
-        line((int) vertices[1].getX(), (int) vertices[1].getY(), (int) vertices[2].getX(), (int) vertices[2].getY(), color);
-        line((int) vertices[0].getX(), (int) vertices[0].getY(), (int) vertices[2].getX(), (int) vertices[2].getY(), color);
+        line(vertices[0], vertices[1], color);
+        line(vertices[1], vertices[2], color);
+        line(vertices[0], vertices[2], color);
+    }
+
+    private List<Vec4d> getDrawableVectors(Vec4d v1, Vec4d v2) {
+        int l = (int) v2.getY() - (int) v1.getY();
+        Vec4d dv = new Vec4d(((int) v2.getX() - (int) v1.getX()) / (double) l,
+                1, (v2.getZ() - v1.getZ()) / l);
+        Vec4d vec = new Vec4d(v1.getX(), v1.getY(), v1.getZ());
+        List<Vec4d> vectors = new ArrayList<>();
+        for (int i = 0; i <= l; i++) {
+            vectors.add(new Vec4d((int) Math.round(vec.getX()), vec.getY(), vec.getZ()));
+            vec = vec.add(dv);
+        }
+        return vectors;
     }
 
     public void rasterTriangle(Triangle triangle, int color) {
         Vec4d[] points = Arrays.stream(triangle.getPoints())
-                .sorted((vec1, vec2) -> (int) Math.ceil(vec1.getY() - vec2.getY()))
-                .map(vec -> new Vec4d((int) vec.getX(), (int) vec.getY(), (int) vec.getZ()))
+                .map(vec -> new Vec4d((int) vec.getX(), (int) vec.getY(), vec.getZ()))
+                .sorted((vec1, vec2) -> (int) Math.signum(Math.ceil(vec1.getY() - vec2.getY())))
                 .toArray(Vec4d[]::new);
-        double y = points[0].getY();
-        while (y <= points[1].getY()) {
-            double x1 = findX(points[0], points[2], y);
-            double x2 = findX(points[0], points[1], y);
-            //line((int) x1, (int) y, (int) x2, (int) y, color);
-            lineZBuf(new Vec4d(x1, y, findZ(points[0], points[2], y)), new Vec4d(x2, y, findZ(points[0], points[1], y)), color);
-            y++;
+        drawTriangle(triangle, color);
+        List<Vec4d> points1 = getDrawableVectors(points[0], points[1]);
+        List<Vec4d> points2 = getDrawableVectors(points[1], points[2]);
+        List<Vec4d> points3 = getDrawableVectors(points[0], points[2]);
+        int index = 0;
+        for (Vec4d vec : points1) {
+            line(vec, points3.get(index), color);
+            index++;
         }
-        while (y < points[2].getY()) {
-            double x1 = findX(points[0], points[2], y);
-            double x2 = findX(points[1], points[2], y);
-            lineZBuf(new Vec4d(x1, y, findZ(points[0], points[2], y)), new Vec4d(x2, y, findZ(points[0], points[1], y)), color);
-            //line((int) x1, (int) y, (int) x2, (int) y, color);
-            y++;
+        index--;
+        for (Vec4d vec : points2) {
+            line(vec, points3.get(index), color);
+            index++;
         }
     }
 
