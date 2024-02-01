@@ -43,6 +43,14 @@ public class Camera {
                 .multiply(Matrix4x4.getTranslation(position.getX(), position.getY(), position.getZ())));
     }
 
+    public Matrix4x4 getProjectionMatrix() {
+        return Matrix4x4.getProjectionMatrix(fov, aspectRatio, zNear, zFar);
+    }
+
+    public Matrix4x4 getScreenMatrix() {
+        return Matrix4x4.getScreenMatrix(width, height);
+    }
+
     public void translate(Vec4d vec) {
         position = position.add(vec);
     }
