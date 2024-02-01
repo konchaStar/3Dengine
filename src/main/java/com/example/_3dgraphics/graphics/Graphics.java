@@ -3,8 +3,10 @@ package com.example._3dgraphics.graphics;
 import com.example._3dgraphics.math.Triangle;
 import com.example._3dgraphics.math.Vec4d;
 
+import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.util.*;
+import java.util.List;
 
 public class Graphics {
     private BufferedImage buffer;
@@ -19,21 +21,23 @@ public class Graphics {
         this.zBuffer = new double[width][height];
     }
 
-    public void clear(int color) {
+    public void clear(Color color) {
+        int rgb = color.getRGB();
         for (int i = 0; i < width; i++) {
             for (int j = 0; j < height; j++) {
-                buffer.setRGB(i, j, color);
+                buffer.setRGB(i, j, rgb);
                 zBuffer[i][j] = 2;
             }
         }
     }
 
-    public void line(Vec4d vec1, Vec4d vec2, int color) {
+    public void line(Vec4d vec1, Vec4d vec2, Color color) {
+        int rgb = color.getRGB();
         vec1 = new Vec4d((int) vec1.getX(), (int) vec1.getY(), vec1.getZ());
         vec2 = new Vec4d((int) vec2.getX(), (int) vec2.getY(), vec2.getZ());
         if (vec1.getX() == vec2.getX() && vec1.getY() == vec2.getY()) {
             if (Math.round(vec1.getX()) >= 0 && Math.round(vec1.getX()) < width - 1 && Math.round(vec1.getY()) >= 0 && Math.round(vec1.getY()) < height - 1) {
-                buffer.setRGB((int) Math.round(vec1.getX()), (int) Math.round(vec1.getY()), color);
+                buffer.setRGB((int) Math.round(vec1.getX()), (int) Math.round(vec1.getY()), rgb);
             }
             return;
         }
@@ -49,7 +53,7 @@ public class Graphics {
                 int posX = (int) Math.round(x);
                 int posY = (int) Math.round(y);
                 if (z < zBuffer[posX][posY]) {
-                    buffer.setRGB(posX, posY, color);
+                    buffer.setRGB(posX, posY, rgb);
                     zBuffer[posX][posY] = z;
                 }
             }
@@ -59,10 +63,11 @@ public class Graphics {
         }
     }
 
-    public void line(int x1, int y1, int x2, int y2, int color) {
+    public void line(int x1, int y1, int x2, int y2, Color color) {
+        int rgb = color.getRGB();
         if (x1 == x2 && y1 == y2) {
             if (x1 >= 0 && x1 < width - 1 && y1 >= 0 && y1 < height - 1) {
-                buffer.setRGB(x1, y1, color);
+                buffer.setRGB(x1, y1, rgb);
             }
             return;
         }
@@ -74,14 +79,14 @@ public class Graphics {
         double dy = (y2 - y1) / l;
         for (int i = 0; i <= l; i++) {
             if (Math.round(x) >= 0 && Math.round(x) < width - 1 && Math.round(y) >= 0 && Math.round(y) < height - 1) {
-                buffer.setRGB((int) Math.round(x), (int) Math.round(y), color);
+                buffer.setRGB((int) Math.round(x), (int) Math.round(y), rgb);
             }
             x += dx;
             y += dy;
         }
     }
 
-    public void drawTriangle(Triangle triangle, int color) {
+    public void drawTriangle(Triangle triangle, Color color) {
         Vec4d[] vertices = triangle.getPoints();
         line(vertices[0], vertices[1], color);
         line(vertices[1], vertices[2], color);
@@ -101,7 +106,7 @@ public class Graphics {
         return vectors;
     }
 
-    public void rasterTriangle(Triangle triangle, int color) {
+    public void rasterTriangle(Triangle triangle, Color color) {
         Vec4d[] points = Arrays.stream(triangle.getPoints())
                 .map(vec -> new Vec4d((int) vec.getX(), (int) vec.getY(), vec.getZ()))
                 .sorted((vec1, vec2) -> (int) Math.signum(Math.ceil(vec1.getY() - vec2.getY())))

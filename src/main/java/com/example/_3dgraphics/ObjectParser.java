@@ -37,7 +37,6 @@ public class ObjectParser {
                 .map(vertex -> Integer.parseInt(vertex.split("/")[0]) - 1)
                 .toArray(Integer[]::new);
         for (int i = 1; i < vectors.length - 1; i++) {
-
             triangles.add(new Triangle(vertices.get(vectors[0]), vertices.get(vectors[i]),
                     vertices.get(vectors[i + 1])));
         }

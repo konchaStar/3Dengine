@@ -4,7 +4,6 @@ import com.example._3dgraphics.graphics.Graphics;
 import com.example._3dgraphics.math.Matrix4x4;
 import com.example._3dgraphics.math.Triangle;
 import com.example._3dgraphics.math.Vec4d;
-import com.sun.prism.paint.Color;
 
 import javax.swing.*;
 import java.awt.*;
@@ -28,6 +27,7 @@ public class App extends JComponent implements ActionListener, KeyListener, Mous
     private double angle = 0;
     private Camera camera;
     private Robot input;
+    private Vec4d light = new Vec4d(2, 2, 1).normalize();
 
     public static void main(String[] args) throws IOException, AWTException {
         BufferedImage buffer = new BufferedImage(WINDOW_WIDTH + 1, WINDOW_HEIGHT + 1, BufferedImage.TYPE_INT_RGB);
@@ -49,7 +49,7 @@ public class App extends JComponent implements ActionListener, KeyListener, Mous
         prev = System.currentTimeMillis();
         camera = new Camera(WINDOW_WIDTH, WINDOW_HEIGHT, 90, 0.1, 10);
         cube = new Mesh();
-        cube.loadMesh("objects/monkey.obj");
+        cube.loadMesh("objects/cube.obj");
         input.mouseMove(WINDOW_WIDTH / 2, WINDOW_HEIGHT / 2);
         timer = new Timer(5, this);
         timer.start();
@@ -57,25 +57,31 @@ public class App extends JComponent implements ActionListener, KeyListener, Mous
 
     @Override
     public void paint(java.awt.Graphics g) {
-        graphics.clear(Color.WHITE.getIntArgbPre());
         angle += (System.currentTimeMillis() - prev) / 1000.0 * 90;
         frame.setTitle(String.format("Press esc to exit %d fps", (int) (1000 / (System.currentTimeMillis() - prev))));
         prev = System.currentTimeMillis();
         if (angle > 360) {
             angle -= 360;
         }
-        graphics.clear(Color.WHITE.getIntArgbPre());
+        graphics.clear(new Color(255, 255, 255));
         modelTriangles.clear();
-        Matrix4x4 model = Matrix4x4.getRotationYMatrix(0)
-                        .multiply(Matrix4x4.getTranslation(0,0,5));
+        Matrix4x4 model = Matrix4x4.getRotationYMatrix(90)
+                .multiply(Matrix4x4.getTranslation(0, 0, 5));
         Matrix4x4 projection = camera.getCameraMatrix()
                 .multiply(Matrix4x4.getProjectionMatrix(90, (double) WINDOW_HEIGHT / WINDOW_WIDTH, 0.1, 10))
                 .multiply(Matrix4x4.getScreenMatrix(WINDOW_WIDTH, WINDOW_HEIGHT));
+        Color color = new Color(255, 153, 153);
         for (Triangle tri : cube.getTris()) {
             Triangle triangle = tri.multiply(model);
             double dot = triangle.getNormal().dot(camera.getPosition().sub(triangle.getPoints()[0]).normalize());
-            if(dot < 0) {
-                graphics.rasterTriangle(tri.multiply(model.multiply(projection)), 0);
+            if (dot < 0) {
+                //double intensity = Math.max(0.1, triangle.getNormal().dot(light));
+                double intensity = Math.max(0.1, -dot);
+                graphics.rasterTriangle(tri.multiply(model.multiply(projection)), new Color(
+                        (int) (color.getRed() * intensity),
+                        (int) (color.getGreen() * intensity),
+                        (int) (color.getBlue() * intensity)
+                ));
             }
         }
         g.drawImage(graphics.getBuffer(), 0, 0, null);
@@ -119,7 +125,7 @@ public class App extends JComponent implements ActionListener, KeyListener, Mous
         if (e.getKeyCode() == KeyEvent.VK_SPACE) {
             camera.translate(new Vec4d(0, 1, 0).multiply(delta * 10));
         }
-        if(e.getKeyCode() == KeyEvent.VK_SHIFT) {
+        if (e.getKeyCode() == KeyEvent.VK_SHIFT) {
             camera.translate(new Vec4d(0, 1, 0).multiply(-delta * 10));
         }
         if (e.getKeyCode() == KeyEvent.VK_ESCAPE) {
