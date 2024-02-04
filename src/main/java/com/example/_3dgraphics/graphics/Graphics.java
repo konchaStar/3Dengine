@@ -117,7 +117,7 @@ public class Graphics {
                 .map(vec -> new Vec4d((int) vec.getX(), (int) vec.getY(), vec.getZ()))
                 .sorted((vec1, vec2) -> (int) Math.signum(Math.ceil(vec1.getY() - vec2.getY())))
                 .toArray(Vec4d[]::new);
-        //drawTriangle(triangle, color);
+
         List<Vec4d> points1 = getDrawableVectors(points[0], points[1]);
         List<Vec4d> points2 = getDrawableVectors(points[1], points[2]);
         List<Vec4d> points3 = getDrawableVectors(points[0], points[2]);

@@ -1,26 +1,45 @@
 package com.example._3dgraphics;
+
+import com.example._3dgraphics.graphics.Graphics;
+import com.example._3dgraphics.math.Triangle;
 import com.example._3dgraphics.math.Vec4d;
 import com.example._3dgraphics.math.Matrix4x4;
-import com.example._3dgraphics.math.Vec4d;
+import com.example._3dgraphics.math.Plane;
 
+import java.awt.*;
+import java.util.ArrayList;
+import java.util.List;
 
 public class Camera {
     private Matrix4x4 model = Matrix4x4.getIdentity();
-    private Vec4d position = new Vec4d(0,0,0);
+    private Matrix4x4 projScale;
+    private Vec4d position = new Vec4d(0, 0, 0);
+    private List<Plane> planes = new ArrayList<>();
     private int width;
     private int height;
     private double aspectRatio;
     private double fov;
     private double zNear;
     private double zFar;
+    private Graphics graphics;
 
-    public Camera(int width, int height, double fov, double zNear, double zFar) {
+    public Camera(int width, int height, double fov, double zNear, double zFar, Graphics graphics) {
         this.width = width;
         this.height = height;
         this.aspectRatio = (double) height / width;
         this.fov = fov;
         this.zNear = zNear;
         this.zFar = zFar;
+        this.graphics = graphics;
+        projScale = getProjectionMatrix().multiply(getScreenMatrix());
+        planes.add(new Plane(new Vec4d(0, 0, 1), new Vec4d(0, 0, zNear)));
+        planes.add(new Plane(new Vec4d(0, 0, -1), new Vec4d(0, 0, zFar)));
+        double angle1 = Math.PI * 0.5 * fov / 180;
+        double angle2 = angle1 / aspectRatio;
+        planes.add(new Plane(new Vec4d(-Math.cos(angle2), 0, Math.sin(angle2)), new Vec4d(0, 0, 0)));
+        planes.add(new Plane(new Vec4d(Math.cos(angle2), 0, Math.sin(angle2)), new Vec4d(0, 0, 0)));
+        planes.add(new Plane(new Vec4d(0, -Math.cos(angle1), Math.sin(angle1)), new Vec4d(0, 0, 0)));
+        planes.add(new Plane(new Vec4d(0, Math.cos(angle1), Math.sin(angle1)), new Vec4d(0, 0, 0)));
     }
 
     public Vec4d lookAt() {
@@ -36,6 +55,45 @@ public class Camera {
     public Vec4d right() {
         double[][] matrix = model.getMatrix();
         return new Vec4d(matrix[0][0], matrix[0][1], matrix[0][2]).normalize();
+    }
+
+    public void draw(Mesh mesh, Matrix4x4 model, Color color, Vec4d light, boolean isPointLight) {
+        List<Triangle> buffer = new ArrayList<>();
+        List<Triangle> clipped = new ArrayList<>();
+        Matrix4x4 view = getCameraMatrix();
+        for (Triangle tri : mesh.getTris()) {
+            Triangle triangle = tri.multiply(model);
+            double dot = triangle.getNormal().dot(triangle.getPoints()[0].sub(getPosition()).normalize());
+            if (dot > 0) {
+                double intensity = isPointLight ? Math.max(0.3, triangle.getNormal()
+                        .dot(triangle.getPoints()[0].sub(light).normalize()))
+                        : Math.max(0.3, triangle.getNormal().dot(light));
+                triangle = triangle.multiply(view);
+                clipped.clear();
+                buffer.clear();
+                clipped.add(triangle);
+                for (Plane plane : planes) {
+                    while (!clipped.isEmpty()) {
+                        List<Triangle> clippedResult = plane.clip(clipped.get(clipped.size() - 1));
+                        clipped.remove(clipped.size() - 1);
+                        buffer.addAll(clippedResult);
+                    }
+                    clipped.addAll(buffer);
+                    buffer.clear();
+                }
+                Color illuminated = new Color(
+                        (int) (intensity * color.getRed()),
+                        (int) (intensity * color.getGreen()),
+                        (int) (intensity * color.getBlue()));
+                for(Triangle clippedTri : clipped) {
+                    graphics.rasterTriangle(clippedTri.multiply(getProjScale()), illuminated);
+                }
+            }
+        }
+    }
+
+    public void draw(Mesh mesh, Matrix4x4 model, Color color) {
+        draw(mesh, model, color, getPosition(), true);
     }
 
     public Matrix4x4 getCameraMatrix() {
@@ -69,6 +127,14 @@ public class Camera {
 
     public void rotate(Vec4d vec, double angle) {
         model = model.multiply(Matrix4x4.getRotationMatrix(vec, angle));
+    }
+
+    public Matrix4x4 getProjScale() {
+        return projScale;
+    }
+
+    public void setProjScale(Matrix4x4 projScale) {
+        this.projScale = projScale;
     }
 
     public Matrix4x4 getModel() {
