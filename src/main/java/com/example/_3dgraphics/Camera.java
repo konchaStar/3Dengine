@@ -8,6 +8,8 @@ import com.example._3dgraphics.math.Plane;
 
 import java.awt.*;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Comparator;
 import java.util.List;
 
 public class Camera {
@@ -63,11 +65,11 @@ public class Camera {
         Matrix4x4 view = getCameraMatrix();
         for (Triangle tri : mesh.getTris()) {
             Triangle triangle = tri.multiply(model);
-            double dot = triangle.getNormal().dot(triangle.getPoints()[0].sub(getPosition()).normalize());
+            double dot = triangle.getNormal().dot(getPosition().sub(triangle.getPoints()[0]).normalize());
             if (dot > 0) {
-                double intensity = isPointLight ? Math.max(0.3, triangle.getNormal()
-                        .dot(triangle.getPoints()[0].sub(light).normalize()))
-                        : Math.max(0.3, triangle.getNormal().dot(light));
+                double intensity = isPointLight ? Math.max(0.1, triangle.getNormal()
+                        .dot(light.sub(triangle.getPoints()[0]).normalize()))
+                        : Math.max(0.1, triangle.getNormal().dot(light));
                 triangle = triangle.multiply(view);
                 clipped.clear();
                 buffer.clear();
@@ -85,9 +87,34 @@ public class Camera {
                         (int) (intensity * color.getRed()),
                         (int) (intensity * color.getGreen()),
                         (int) (intensity * color.getBlue()));
-                for(Triangle clippedTri : clipped) {
+                for (Triangle clippedTri : clipped) {
                     graphics.rasterTriangle(clippedTri.multiply(getProjScale()), illuminated);
                 }
+            }
+        }
+    }
+
+    public void phongShading(Mesh mesh, Matrix4x4 model, Vec4d light, Color color) {
+        Matrix4x4 view = getCameraMatrix();
+        for (Triangle triangle : mesh.getTris()) {
+            Triangle modelTriangle = triangle.multiply(model);
+            double dot = modelTriangle.getNormal().dot(getPosition().sub(modelTriangle.getPoints()[0]).normalize());
+            if (dot > 0) {
+                Triangle viewTriangle = modelTriangle.multiply(view);
+                Triangle projTriangle = viewTriangle.multiply(getProjScale());
+                Integer[] indexes = Arrays.stream(new Integer[]{0, 1, 2})
+                        .sorted(Comparator.comparingInt(i -> (int) projTriangle.getPoints()[i].getY()))
+                        .toArray(Integer[]::new);
+                Vec4d[] lights = new Vec4d[]{light.sub(modelTriangle.getPoints()[indexes[0]]),
+                        light.sub(modelTriangle.getPoints()[indexes[1]]),
+                        light.sub(modelTriangle.getPoints()[indexes[2]])};
+                Vec4d[] normals = new Vec4d[]{modelTriangle.getNormals()[indexes[0]],
+                        modelTriangle.getNormals()[indexes[1]],
+                        modelTriangle.getNormals()[indexes[2]]};
+                Vec4d[] vertices = new Vec4d[]{projTriangle.getPoints()[indexes[0]],
+                        projTriangle.getPoints()[indexes[1]],
+                        projTriangle.getPoints()[indexes[2]]};
+                graphics.phongShading(vertices, lights, normals, color);
             }
         }
     }

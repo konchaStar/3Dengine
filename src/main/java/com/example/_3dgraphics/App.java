@@ -26,7 +26,7 @@ public class App extends JComponent implements ActionListener, KeyListener, Mous
     private double angle = 0;
     private Camera camera;
     private Robot input;
-    private Vec4d light = new Vec4d(0, 0, 1).normalize();
+    private Vec4d light = new Vec4d(1, 1, 0);
 
     public static void main(String[] args) throws IOException, AWTException {
         BufferedImage buffer = new BufferedImage(WINDOW_WIDTH + 1, WINDOW_HEIGHT + 1, BufferedImage.TYPE_INT_RGB);
@@ -48,7 +48,7 @@ public class App extends JComponent implements ActionListener, KeyListener, Mous
         prev = System.currentTimeMillis();
         camera = new Camera(WINDOW_WIDTH, WINDOW_HEIGHT, 90, 0.1, 1000, graphics);
         cube = new Mesh();
-        cube.loadMesh("objects/girl.obj");
+        cube.loadMesh("objects/head.obj");
         input.mouseMove(WINDOW_WIDTH / 2, WINDOW_HEIGHT / 2);
         timer = new Timer(5, this);
         timer.start();
@@ -56,30 +56,17 @@ public class App extends JComponent implements ActionListener, KeyListener, Mous
 
     @Override
     public void paint(java.awt.Graphics g) {
-        angle += (System.currentTimeMillis() - prev) / 1000.0 * 90;
+//        angle += (System.currentTimeMillis() - prev) / 1000.0 * 90;
         frame.setTitle(String.format("Press esc to exit %d fps", (int) (1000 / (System.currentTimeMillis() - prev))));
         prev = System.currentTimeMillis();
-        if (angle > 360) {
-            angle -= 360;
-        }
+//        if (angle > 360) {
+//            angle -= 360;
+//        }
         graphics.clear(new Color(255, 255, 255));
         Matrix4x4 model = Matrix4x4.getRotationYMatrix(180)
-                .multiply(Matrix4x4.getTranslation(0, 0, 100));
-//        Color color = new Color(255, 153, 153);
-//        for (Triangle tri : cube.getTris()) {
-//            Triangle triangle = tri.multiply(model);
-//            double dot = triangle.getNormal().dot(camera.getPosition().sub(triangle.getPoints()[0]).normalize());
-//            if (dot < 0) {
-//                //double intensity = Math.max(0.1, triangle.getNormal().dot(light));
-//                double intensity = Math.max(0.4, -dot);
-//                graphics.rasterTriangle(triangle.multiply(camera.getCameraMatrix().multiply(camera.getProjScale())), new Color(
-//                        (int) (color.getRed() * intensity),
-//                        (int) (color.getGreen() * intensity),
-//                        (int) (color.getBlue() * intensity)
-//                ));
-//            }
-//        }
-        camera.draw(cube, model, new Color(255, 153, 153));
+                .multiply(Matrix4x4.getTranslation(0, 0, 2));
+        //camera.phongShading(cube, model, light, new Color(255, 153, 153));
+        camera.draw(cube, model, new Color(255, 153, 153), light, true);
         g.drawImage(graphics.getBuffer(), 0, 0, null);
     }
 

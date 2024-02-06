@@ -55,6 +55,10 @@ public class Vec4d {
         return new Vec4d(x - vec.x, y - vec.y, z - vec.z);
     }
 
+    public Vec4d divide(double n) {
+        return new Vec4d(x / n, y / n, z / n);
+    }
+
     public double getX() {
         return x;
     }
