@@ -19,19 +19,19 @@ public class Triangle {
         Vec4d p1 = points[0].multiply(matrix4x4);
         Vec4d p2 = points[1].multiply(matrix4x4);
         Vec4d p3 = points[2].multiply(matrix4x4);
-        double[][] matrix = new double[4][4];
-        for (int i = 0; i < 4; i++) {
-            for (int j = 0; j < 4; j++) {
-                matrix[i][j] = matrix4x4.getMatrix()[i][j];
-            }
-        }
+        double[][] matrix = matrix4x4.getMatrix();
+        double x = matrix[3][0];
+        double y = matrix[3][1];
+        double z = matrix[3][2];
         matrix[3][0] = 0;
         matrix[3][1] = 0;
         matrix[3][2] = 0;
-        Matrix4x4 model = new Matrix4x4(matrix);
-        Vec4d n1 = normals[0].multiply(model).normalize();
-        Vec4d n2 = normals[1].multiply(model).normalize();
-        Vec4d n3 = normals[2].multiply(model).normalize();
+        Vec4d n1 = normals[0].multiply(matrix4x4).normalize();
+        Vec4d n2 = normals[1].multiply(matrix4x4).normalize();
+        Vec4d n3 = normals[2].multiply(matrix4x4).normalize();
+        matrix[3][0] = x;
+        matrix[3][1] = y;
+        matrix[3][2] = z;
         Triangle triangle = new Triangle(p1, p2, p3);
         triangle.setNormals(n1, n2, n3);
         return triangle;

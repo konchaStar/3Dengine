@@ -119,6 +119,35 @@ public class Camera {
         }
     }
 
+    public void phongLighting(Mesh mesh, Matrix4x4 model, Vec4d light, Color ambient, Color diffuse, Color reflect) {
+        Matrix4x4 view = getCameraMatrix();
+        for (Triangle triangle : mesh.getTris()) {
+            Triangle modelTriangle = triangle.multiply(model);
+            double dot = modelTriangle.getNormal().dot(getPosition().sub(modelTriangle.getPoints()[0]).normalize());
+            if (dot > 0) {
+                Triangle viewTriangle = modelTriangle.multiply(view);
+                Triangle projTriangle = viewTriangle.multiply(getProjScale());
+                Integer[] indexes = Arrays.stream(new Integer[]{0, 1, 2})
+                        .sorted(Comparator.comparingInt(i -> (int) projTriangle.getPoints()[i].getY()))
+                        .toArray(Integer[]::new);
+                Vec4d[] lights = new Vec4d[]{light.sub(modelTriangle.getPoints()[indexes[0]]),
+                        light.sub(modelTriangle.getPoints()[indexes[1]]),
+                        light.sub(modelTriangle.getPoints()[indexes[2]])};
+                Vec4d[] normals = new Vec4d[]{modelTriangle.getNormals()[indexes[0]],
+                        modelTriangle.getNormals()[indexes[1]],
+                        modelTriangle.getNormals()[indexes[2]]};
+                Vec4d[] vertices = new Vec4d[]{projTriangle.getPoints()[indexes[0]],
+                        projTriangle.getPoints()[indexes[1]],
+                        projTriangle.getPoints()[indexes[2]]};
+                graphics.phongLighting(vertices, lights, normals, lookAt(), ambient, diffuse, reflect);
+            }
+        }
+    }
+
+    public void phongShading(Mesh mesh, Matrix4x4 model, Color color) {
+        phongShading(mesh, model, getPosition(), color);
+    }
+
     public void draw(Mesh mesh, Matrix4x4 model, Color color) {
         draw(mesh, model, color, getPosition(), true);
     }

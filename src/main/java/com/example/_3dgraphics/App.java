@@ -2,7 +2,6 @@ package com.example._3dgraphics;
 
 import com.example._3dgraphics.graphics.Graphics;
 import com.example._3dgraphics.math.Matrix4x4;
-import com.example._3dgraphics.math.Triangle;
 import com.example._3dgraphics.math.Vec4d;
 
 import javax.swing.*;
@@ -10,8 +9,6 @@ import java.awt.*;
 import java.awt.event.*;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 
 public class App extends JComponent implements ActionListener, KeyListener, MouseWheelListener {
     private static JFrame frame;
@@ -66,7 +63,8 @@ public class App extends JComponent implements ActionListener, KeyListener, Mous
         Matrix4x4 model = Matrix4x4.getRotationYMatrix(180)
                 .multiply(Matrix4x4.getTranslation(0, 0, 2));
         //camera.phongShading(cube, model, light, new Color(255, 153, 153));
-        camera.draw(cube, model, new Color(255, 153, 153), light, true);
+        //camera.draw(cube, model, new Color(255, 153, 153), light, true);
+        camera.phongLighting(cube, model, light, new Color(128, 77, 77), new Color(255, 153, 153), new Color(255, 200, 200));
         g.drawImage(graphics.getBuffer(), 0, 0, null);
     }
 
