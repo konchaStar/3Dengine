@@ -69,6 +69,10 @@ public class ObjectParser {
         normals.add(new Vec4d(coordinates[0], coordinates[1], coordinates[2]));
     }
 
+    public boolean hasNormals() {
+        return !normals.isEmpty();
+    }
+
     public List<Vec4d> getVertices() {
         return vertices;
     }

@@ -23,7 +23,7 @@ public class App extends JComponent implements ActionListener, KeyListener, Mous
     private double angle = 0;
     private Camera camera;
     private Robot input;
-    private Vec4d light = new Vec4d(1, 1, 0);
+    private Vec4d light = new Vec4d(0, 0, 0);
 
     public static void main(String[] args) throws IOException, AWTException {
         BufferedImage buffer = new BufferedImage(WINDOW_WIDTH + 1, WINDOW_HEIGHT + 1, BufferedImage.TYPE_INT_RGB);
@@ -45,7 +45,7 @@ public class App extends JComponent implements ActionListener, KeyListener, Mous
         prev = System.currentTimeMillis();
         camera = new Camera(WINDOW_WIDTH, WINDOW_HEIGHT, 90, 0.1, 1000, graphics);
         cube = new Mesh();
-        cube.loadMesh("objects/head.obj");
+        cube.loadMesh("objects/monkey.obj");
         input.mouseMove(WINDOW_WIDTH / 2, WINDOW_HEIGHT / 2);
         timer = new Timer(5, this);
         timer.start();
@@ -53,17 +53,17 @@ public class App extends JComponent implements ActionListener, KeyListener, Mous
 
     @Override
     public void paint(java.awt.Graphics g) {
-//        angle += (System.currentTimeMillis() - prev) / 1000.0 * 90;
+        angle += (System.currentTimeMillis() - prev) / 1000.0 * 90;
         frame.setTitle(String.format("Press esc to exit %d fps", (int) (1000 / (System.currentTimeMillis() - prev))));
         prev = System.currentTimeMillis();
-//        if (angle > 360) {
-//            angle -= 360;
-//        }
+        if (angle > 360) {
+            angle -= 360;
+        }
         graphics.clear(new Color(255, 255, 255));
-        Matrix4x4 model = Matrix4x4.getRotationYMatrix(180)
-                .multiply(Matrix4x4.getTranslation(0, 0, 2));
-        //camera.phongShading(cube, model, light, new Color(255, 153, 153));
+        Matrix4x4 model = Matrix4x4.getRotationYMatrix(angle)
+                .multiply(Matrix4x4.getTranslation(0, 0, 3));
         //camera.draw(cube, model, new Color(255, 153, 153), light, true);
+        //camera.phongShading(cube, model, light, new Color(255, 153, 153));
         camera.phongLighting(cube, model, light, new Color(128, 77, 77), new Color(255, 153, 153), new Color(255, 200, 200));
         g.drawImage(graphics.getBuffer(), 0, 0, null);
     }
