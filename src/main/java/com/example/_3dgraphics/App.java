@@ -4,10 +4,12 @@ import com.example._3dgraphics.graphics.Graphics;
 import com.example._3dgraphics.math.Matrix4x4;
 import com.example._3dgraphics.math.Vec4d;
 
+import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
 import java.awt.image.BufferedImage;
+import java.io.File;
 import java.io.IOException;
 
 public class App extends JComponent implements ActionListener, KeyListener, MouseWheelListener {
@@ -23,7 +25,7 @@ public class App extends JComponent implements ActionListener, KeyListener, Mous
     private double angle = 0;
     private Camera camera;
     private Robot input;
-    private Vec4d light = new Vec4d(0, 0, 0);
+    private Vec4d light = new Vec4d(1, 1, 0);
 
     public static void main(String[] args) throws IOException, AWTException {
         BufferedImage buffer = new BufferedImage(WINDOW_WIDTH + 1, WINDOW_HEIGHT + 1, BufferedImage.TYPE_INT_RGB);
@@ -45,7 +47,9 @@ public class App extends JComponent implements ActionListener, KeyListener, Mous
         prev = System.currentTimeMillis();
         camera = new Camera(WINDOW_WIDTH, WINDOW_HEIGHT, 90, 0.1, 1000, graphics);
         cube = new Mesh();
-        cube.loadMesh("objects/monkey.obj");
+        cube.loadMesh("objects/head.obj");
+        cube.rotateY(180);
+        cube.translate(new Vec4d(0, 0, 2));
         input.mouseMove(WINDOW_WIDTH / 2, WINDOW_HEIGHT / 2);
         timer = new Timer(5, this);
         timer.start();
@@ -60,11 +64,10 @@ public class App extends JComponent implements ActionListener, KeyListener, Mous
             angle -= 360;
         }
         graphics.clear(new Color(255, 255, 255));
-        Matrix4x4 model = Matrix4x4.getRotationYMatrix(angle)
-                .multiply(Matrix4x4.getTranslation(0, 0, 3));
-        //camera.draw(cube, model, new Color(255, 153, 153), light, true);
-        //camera.phongShading(cube, model, light, new Color(255, 153, 153));
-        camera.phongLighting(cube, model, light, new Color(128, 77, 77), new Color(255, 153, 153), new Color(255, 200, 200));
+        //camera.draw(cube, new Color(255, 153, 153), light, true);
+        //camera.phongShading(cube, light, new Color(255, 153, 153));
+        camera.phongLighting(cube, light, new Color(128, 77, 77), new Color(255, 153, 153), new Color(255, 200, 200));
+
         g.drawImage(graphics.getBuffer(), 0, 0, null);
     }
 

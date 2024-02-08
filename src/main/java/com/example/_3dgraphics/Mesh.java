@@ -9,7 +9,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class Mesh {
+public class Mesh extends Object3D {
     private List<Triangle> tris = new ArrayList<>();
 
     public void loadMesh(String path) throws IOException {

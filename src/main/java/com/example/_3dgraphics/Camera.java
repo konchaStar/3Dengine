@@ -12,10 +12,8 @@ import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
 
-public class Camera {
-    private Matrix4x4 model = Matrix4x4.getIdentity();
+public class Camera extends Object3D {
     private Matrix4x4 projScale;
-    private Vec4d position = new Vec4d(0, 0, 0);
     private List<Plane> planes = new ArrayList<>();
     private int width;
     private int height;
@@ -59,10 +57,11 @@ public class Camera {
         return new Vec4d(matrix[0][0], matrix[0][1], matrix[0][2]).normalize();
     }
 
-    public void draw(Mesh mesh, Matrix4x4 model, Color color, Vec4d light, boolean isPointLight) {
+    public void draw(Mesh mesh, Color color, Vec4d light, boolean isPointLight) {
         List<Triangle> buffer = new ArrayList<>();
         List<Triangle> clipped = new ArrayList<>();
         Matrix4x4 view = getCameraMatrix();
+        Matrix4x4 model = mesh.getModelTranslationMatrix();
         for (Triangle tri : mesh.getTris()) {
             Triangle triangle = tri.multiply(model);
             double dot = triangle.getNormal().dot(getPosition().sub(triangle.getPoints()[0]).normalize());
@@ -94,8 +93,9 @@ public class Camera {
         }
     }
 
-    public void phongShading(Mesh mesh, Matrix4x4 model, Vec4d light, Color color) {
+    public void phongShading(Mesh mesh, Vec4d light, Color color) {
         Matrix4x4 view = getCameraMatrix();
+        Matrix4x4 model = mesh.getModelTranslationMatrix();
         for (Triangle triangle : mesh.getTris()) {
             Triangle modelTriangle = triangle.multiply(model);
             double dot = modelTriangle.getNormal().dot(getPosition().sub(modelTriangle.getPoints()[0]).normalize());
@@ -119,8 +119,9 @@ public class Camera {
         }
     }
 
-    public void phongLighting(Mesh mesh, Matrix4x4 model, Vec4d light, Color ambient, Color diffuse, Color reflect) {
+    public void phongLighting(Mesh mesh, Vec4d light, Color ambient, Color diffuse, Color reflect) {
         Matrix4x4 view = getCameraMatrix();
+        Matrix4x4 model = mesh.getModelTranslationMatrix();
         for (Triangle triangle : mesh.getTris()) {
             Triangle modelTriangle = triangle.multiply(model);
             double dot = modelTriangle.getNormal().dot(getPosition().sub(modelTriangle.getPoints()[0]).normalize());
@@ -144,12 +145,12 @@ public class Camera {
         }
     }
 
-    public void phongShading(Mesh mesh, Matrix4x4 model, Color color) {
-        phongShading(mesh, model, getPosition(), color);
+    public void phongShading(Mesh mesh, Color color) {
+        phongShading(mesh, getPosition(), color);
     }
 
-    public void draw(Mesh mesh, Matrix4x4 model, Color color) {
-        draw(mesh, model, color, getPosition(), true);
+    public void draw(Mesh mesh, Color color) {
+        draw(mesh, color, getPosition(), true);
     }
 
     public Matrix4x4 getCameraMatrix() {
@@ -165,40 +166,12 @@ public class Camera {
         return Matrix4x4.getScreenMatrix(width, height);
     }
 
-    public void translate(Vec4d vec) {
-        position = position.add(vec);
-    }
-
-    public void rotateY(double angle) {
-        model = model.multiply(Matrix4x4.getRotationYMatrix(angle));
-    }
-
-    public void rotateX(double angle) {
-        model = model.multiply(Matrix4x4.getRotationXMatrix(angle));
-    }
-
-    public void rotateZ(double angle) {
-        model = model.multiply(Matrix4x4.getRotationZMatrix(angle));
-    }
-
-    public void rotate(Vec4d vec, double angle) {
-        model = model.multiply(Matrix4x4.getRotationMatrix(vec, angle));
-    }
-
     public Matrix4x4 getProjScale() {
         return projScale;
     }
 
     public void setProjScale(Matrix4x4 projScale) {
         this.projScale = projScale;
-    }
-
-    public Matrix4x4 getModel() {
-        return model;
-    }
-
-    public void setModel(Matrix4x4 model) {
-        this.model = model;
     }
 
     public int getWidth() {
@@ -249,11 +222,4 @@ public class Camera {
         this.zFar = zFar;
     }
 
-    public Vec4d getPosition() {
-        return position;
-    }
-
-    public void setPosition(Vec4d position) {
-        this.position = position;
-    }
 }
