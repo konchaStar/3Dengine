@@ -3,6 +3,7 @@ package com.example._3dgraphics.math;
 public class Triangle {
     private Vec4d points[] = new Vec4d[3];
     private Vec4d normals[] = new Vec4d[3];
+    private Vec3d textures[] = new Vec3d[3];
     private Vec4d normal;
 
     public Triangle(Vec4d p1, Vec4d p2, Vec4d p3) {
@@ -63,6 +64,12 @@ public class Triangle {
         normals[0] = n1;
         normals[1] = n2;
         normals[2] = n3;
+    }
+
+    public void setTextures(Vec3d t1, Vec3d t2, Vec3d t3) {
+        textures[0] = t1;
+        textures[1] = t2;
+        textures[2] = t3;
     }
 
     public Vec4d[] getNormals() {

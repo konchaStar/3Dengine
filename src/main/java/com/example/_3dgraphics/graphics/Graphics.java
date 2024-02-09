@@ -122,13 +122,13 @@ public class Graphics {
         }
     }
 
-    public void line(Vec4d vec1, Vec4d vec2, Vec4d l1, Vec4d l2, Vec4d n1, Vec4d n2, Vec4d view, Color ambient, Color diffuse, Color reflect) {
+    public void line(Vec4d vec1, Vec4d vec2, Vec4d l1, Vec4d l2, Vec4d n1, Vec4d n2, Vec4d v1, Vec4d v2, Color ambient, Color diffuse, Color reflect) {
         vec1 = new Vec4d((int) vec1.getX(), (int) vec1.getY(), vec1.getZ());
         vec2 = new Vec4d((int) vec2.getX(), (int) vec2.getY(), vec2.getZ());
-        final double ka = 0.1;
-        final double kd = 0.5;
-        final double kr = 0.4;
-        final double reflection = 64;
+        final double ka = 0.2;
+        final double kd = 0;
+        final double kr = 1;
+        final double reflection = 2;
         if (vec1.getX() == vec2.getX() && vec1.getY() == vec2.getY()) {
             int posX = (int) Math.round(vec1.getX());
             int posY = (int) Math.round(vec1.getY());
@@ -137,6 +137,7 @@ public class Graphics {
                 if (z < zBuffer[posX][posY]) {
                     l1 = l1.normalize();
                     n1 = n1.normalize();
+                    Vec4d view = v1.normalize();
                     double dif = Math.max(0, l1.dot(n1));
                     Vec4d r = l1.sub(n1.multiply(2 * l1.dot(n1)));
                     double ref = Math.pow(Math.max(0, r.normalize().dot(view.normalize())), reflection);
@@ -160,6 +161,7 @@ public class Graphics {
         double dz = (vec2.getZ() - vec1.getZ()) / l;
         Vec4d dl = l2.sub(l1).divide(l);
         Vec4d dn = n2.sub(n1).divide(l);
+        Vec4d dv = v2.sub(v1).divide(l);
         for (int i = 0; i <= l; i++) {
             if (Math.round(x) >= 0 && Math.round(x) < width - 1 && Math.round(y) >= 0 && Math.round(y) < height - 1) {
                 int posX = (int) Math.round(x);
@@ -167,6 +169,7 @@ public class Graphics {
                 if (z < zBuffer[posX][posY]) {
                     Vec4d light = l1.add(dl.multiply(i)).normalize();
                     Vec4d normal = n1.add(dn.multiply(i)).normalize();
+                    Vec4d view = v1.add(dv.multiply(i)).normalize();
                     double dif = Math.max(0, light.dot(normal));
                     Vec4d r = light.sub(normal.multiply(2 * light.dot(normal)));
                     double ref = Math.pow(Math.max(0, r.normalize().dot(view.normalize())), reflection);
@@ -281,7 +284,7 @@ public class Graphics {
         }
     }
 
-    public void phongLighting(Vec4d[] vertices, Vec4d[] lights, Vec4d[] normals, Vec4d view, Color ambient, Color diffuse, Color reflect) {
+    public void phongLighting(Vec4d[] vertices, Vec4d[] lights, Vec4d[] normals, Vec4d[] views, Color ambient, Color diffuse, Color reflect) {
         List<Vec4d> points1 = getDrawableVectors(vertices[0], vertices[1]);
         List<Vec4d> points2 = getDrawableVectors(vertices[1], vertices[2]);
         List<Vec4d> points3 = getDrawableVectors(vertices[0], vertices[2]);
@@ -291,13 +294,18 @@ public class Graphics {
         Vec4d dn1 = normals[1].sub(normals[0]).divide(points1.size());
         Vec4d dn2 = normals[2].sub(normals[1]).divide(points2.size());
         Vec4d dn3 = normals[2].sub(normals[0]).divide(points3.size());
+        Vec4d dv1 = views[1].sub(views[0]).divide(points1.size());
+        Vec4d dv2 = views[2].sub(views[1]).divide(points2.size());
+        Vec4d dv3 = views[2].sub(views[0]).divide(points3.size());
         int index = 0;
         for (Vec4d vec : points1) {
             Vec4d l1 = lights[0].add(dl1.multiply(index));
             Vec4d l2 = lights[0].add(dl3.multiply(index));
             Vec4d n1 = normals[0].add(dn1.multiply(index));
             Vec4d n2 = normals[0].add(dn3.multiply(index));
-            line(vec, points3.get(index), l1, l2, n1, n2, view, ambient, diffuse, reflect);
+            Vec4d v1 = views[0].add(dv1.multiply(index));
+            Vec4d v2 = views[0].add(dv3.multiply(index));
+            line(vec, points3.get(index), l1, l2, n1, n2, v1, v2, ambient, diffuse, reflect);
             index++;
         }
         index--;
@@ -307,7 +315,9 @@ public class Graphics {
             Vec4d l2 = lights[0].add(dl3.multiply(index));
             Vec4d n1 = normals[1].add(dn2.multiply(index2));
             Vec4d n2 = normals[0].add(dn3.multiply(index));
-            line(vec, points3.get(index), l1, l2, n1, n2, view, ambient, diffuse, reflect);
+            Vec4d v1 = views[1].add(dv2.multiply(index));
+            Vec4d v2 = views[0].add(dv3.multiply(index));
+            line(vec, points3.get(index), l1, l2, n1, n2, v1, v2, ambient, diffuse, reflect);
             index2++;
             index++;
         }

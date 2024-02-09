@@ -7,6 +7,7 @@ import com.example._3dgraphics.math.Matrix4x4;
 import com.example._3dgraphics.math.Plane;
 
 import java.awt.*;
+import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
@@ -55,6 +56,14 @@ public class Camera extends Object3D {
     public Vec4d right() {
         double[][] matrix = model.getMatrix();
         return new Vec4d(matrix[0][0], matrix[0][1], matrix[0][2]).normalize();
+    }
+
+    public void drawText(Mesh mesh, BufferedImage texture) {
+        Matrix4x4 view = getCameraMatrix();
+        Matrix4x4 model = mesh.getModelTranslationMatrix();
+        for(Triangle tri : mesh.getTris()) {
+
+        }
     }
 
     public void draw(Mesh mesh, Color color, Vec4d light, boolean isPointLight) {
@@ -140,7 +149,10 @@ public class Camera extends Object3D {
                 Vec4d[] vertices = new Vec4d[]{projTriangle.getPoints()[indexes[0]],
                         projTriangle.getPoints()[indexes[1]],
                         projTriangle.getPoints()[indexes[2]]};
-                graphics.phongLighting(vertices, lights, normals, lookAt(), ambient, diffuse, reflect);
+                Vec4d[] views = new Vec4d[]{modelTriangle.getPoints()[indexes[0]].sub(position),
+                        modelTriangle.getPoints()[indexes[1]].sub(position),
+                        modelTriangle.getPoints()[indexes[2]].sub(position)};
+                graphics.phongLighting(vertices, lights, normals, views, ambient, diffuse, reflect);
             }
         }
     }

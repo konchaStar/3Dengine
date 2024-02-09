@@ -1,6 +1,7 @@
 package com.example._3dgraphics;
 
 import com.example._3dgraphics.math.Triangle;
+import com.example._3dgraphics.math.Vec3d;
 import com.example._3dgraphics.math.Vec4d;
 
 import java.util.ArrayList;
@@ -11,6 +12,7 @@ public class ObjectParser {
     private List<Vec4d> vertices = new ArrayList<>();
     private List<Triangle> triangles = new ArrayList<>();
     private List<Vec4d> normals = new ArrayList<>();
+    private List<Vec3d> texture = new ArrayList<>();
 
     public void parse(String line) {
         String[] data = line.split(" +");
@@ -25,6 +27,11 @@ public class ObjectParser {
             }
             case "vn": {
                 parseNormals(Arrays.copyOfRange(data, 1, data.length));
+                break;
+            }
+            case "vt": {
+                parseTexture(Arrays.copyOfRange(data, 1, data.length));
+                break;
             }
         }
     }
@@ -43,13 +50,14 @@ public class ObjectParser {
         Integer[] vt = null;
         Integer[] vn = null;
         if (data[0].split("/").length > 1) {
-
+            vt = Arrays.stream(data)
+                    .map(vertex -> Integer.parseInt(vertex.split("/")[1]) - 1)
+                    .toArray(Integer[]::new);
         }
         if (data[0].split("/").length > 2) {
             vn = Arrays.stream(data)
                     .map(vertex -> Integer.parseInt(vertex.split("/")[2]) - 1)
                     .toArray(Integer[]::new);
-
         }
         for (int i = 1; i < v.length - 1; i++) {
             Triangle triangle = new Triangle(vertices.get(v[0]), vertices.get(v[i]),
@@ -57,6 +65,10 @@ public class ObjectParser {
             if (vn != null) {
                 triangle.setNormals(normals.get(vn[0]), normals.get(vn[i]),
                         normals.get(vn[i + 1]));
+            }
+            if (vt != null) {
+                triangle.setTextures(texture.get(vt[0]), texture.get(vt[i]),
+                        texture.get(vt[i + 1]));
             }
             triangles.add(triangle);
         }
@@ -67,6 +79,13 @@ public class ObjectParser {
                 .map(coord -> Double.parseDouble(coord))
                 .toArray(Double[]::new);
         normals.add(new Vec4d(coordinates[0], coordinates[1], coordinates[2]));
+    }
+
+    private void parseTexture(String[] data) {
+        Double[] coordinates = Arrays.stream(data)
+                .map(coord -> Double.parseDouble(coord))
+                .toArray(Double[]::new);
+        texture.add(new Vec3d(coordinates[0], coordinates[1]));
     }
 
     public boolean hasNormals() {
