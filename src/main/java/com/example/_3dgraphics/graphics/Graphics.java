@@ -1,6 +1,7 @@
 package com.example._3dgraphics.graphics;
 
 import com.example._3dgraphics.math.Triangle;
+import com.example._3dgraphics.math.Vec3d;
 import com.example._3dgraphics.math.Vec4d;
 
 import java.awt.*;
@@ -122,6 +123,83 @@ public class Graphics {
         }
     }
 
+    public void line(Vec4d vec1, Vec4d vec2, Vec4d l1, Vec4d l2, Vec4d v1, Vec4d v2, Vec3d t1, Vec3d t2, BufferedImage texture, BufferedImage nm, BufferedImage rm) {
+        vec1 = new Vec4d((int) vec1.getX(), (int) vec1.getY(), vec1.getZ());
+        vec2 = new Vec4d((int) vec2.getX(), (int) vec2.getY(), vec2.getZ());
+        Color reflect = new Color(255, 255, 255);
+        double reflection = 10;
+        if (vec1.getX() == vec2.getX() && vec1.getY() == vec2.getY()) {
+            int posX = (int) Math.round(vec1.getX());
+            int posY = (int) Math.round(vec1.getY());
+            if (posX >= 0 && posX < width - 1 && posY >= 0 && posY < height - 1) {
+                double z = Math.min(vec1.getZ(), vec2.getZ());
+                if (z < zBuffer[posX][posY]) {
+                    Vec4d light = vec1.getZ() < vec2.getZ() ? l1.normalize() : l2.normalize();
+                    double u = vec1.getZ() < vec2.getZ() ? t1.getU() : t2.getU();
+                    double v = vec1.getZ() < vec2.getZ() ? t1.getV() : t2.getV();
+                    Vec4d view = vec1.getZ() < vec2.getZ() ? v1.normalize() : v2.normalize();
+                    int tx = (int) (texture.getWidth() * u);
+                    int ty = texture.getHeight() - 1 - (int) (texture.getHeight() * v);
+                    Color n = new Color(nm.getRGB(tx, ty));
+                    Vec4d normal = new Vec4d((n.getRed() / 255.0) * 2 - 1, (n.getGreen() / 255.0) * 2 - 1,
+                            (n.getBlue() / 255.0) * 2 - 1).normalize();
+                    double dif = Math.max(0, -light.dot(normal));
+                    Vec4d r = light.sub(normal.multiply(2 * light.dot(normal)));
+                    double kr = new Color(rm.getRGB(tx, ty)).getRed() / 255.0;
+                    double ref = Math.pow(Math.max(0, -r.dot(view)), reflection);
+                    Color color = new Color(texture.getRGB(tx, ty));
+                    Color illuminated = new Color((int) (color.getRed() * dif + reflect.getRed() * ref * kr),
+                            (int) (color.getGreen() * dif + reflect.getGreen() * ref * kr),
+                            (int) (color.getBlue() * dif + reflect.getBlue() * ref * kr));
+                    buffer.setRGB(posX, posY, illuminated.getRGB());
+                    zBuffer[posX][posY] = z;
+                }
+            }
+            return;
+        }
+        double l = Math.max(Math.abs(vec1.getX() - vec2.getX()), Math.abs(vec1.getY() - vec2.getY()));
+        double x = vec1.getX();
+        double y = vec1.getY();
+        double z = vec1.getZ();
+        double dx = (vec2.getX() - vec1.getX()) / l;
+        double dy = (vec2.getY() - vec1.getY()) / l;
+        double dz = (vec2.getZ() - vec1.getZ()) / l;
+        double du = (t2.getU() - t1.getU()) / l;
+        double dv = (t2.getV() - t1.getV()) / l;
+        Vec4d dView = (v2.sub(v1)).divide(l);
+        Vec4d dl = (l2.sub(l1)).divide(l);
+        for (int i = 0; i <= l; i++) {
+            if (Math.round(x) >= 0 && Math.round(x) < width - 1 && Math.round(y) >= 0 && Math.round(y) < height - 1) {
+                int posX = (int) Math.round(x);
+                int posY = (int) Math.round(y);
+                if (z < zBuffer[posX][posY]) {
+                    Vec4d light = l1.add(dl.multiply(i)).normalize();
+                    Vec4d view = v1.add(dView.multiply(i)).normalize();
+                    double u = t1.getU() + du * i;
+                    double v = t1.getV() + dv * i;
+                    int tx = (int) (texture.getWidth() * u);
+                    int ty = texture.getHeight() - 1 - (int) (texture.getHeight() * v);
+                    Color n = new Color(nm.getRGB(tx, ty));
+                    Vec4d normal = new Vec4d((n.getRed() / 255.0) * 2 - 1, (n.getGreen() / 255.0) * 2 - 1,
+                            (n.getBlue() / 255.0) * 2 - 1).normalize();
+                    double dif = Math.max(0, -light.dot(normal));
+                    Vec4d r = light.sub(normal.multiply(2 * light.dot(normal)));
+                    double kr = new Color(rm.getRGB(tx, ty)).getRed() / 255.0;
+                    double ref = Math.pow(Math.max(0, -r.dot(view)), reflection);
+                    Color color = new Color(texture.getRGB(tx, ty));
+                    Color illuminated = new Color((int) (color.getRed() * dif + reflect.getRed() * ref * kr),
+                            (int) (color.getGreen() * dif + reflect.getGreen() * ref * kr),
+                            (int) (color.getBlue() * dif + reflect.getBlue() * ref * kr));
+                    buffer.setRGB(posX, posY, illuminated.getRGB());
+                    zBuffer[posX][posY] = z;
+                }
+            }
+            x += dx;
+            y += dy;
+            z += dz;
+        }
+    }
+
     public void line(Vec4d vec1, Vec4d vec2, Vec4d l1, Vec4d l2, Vec4d n1, Vec4d n2, Vec4d v1, Vec4d v2, Color ambient, Color diffuse, Color reflect) {
         vec1 = new Vec4d((int) vec1.getX(), (int) vec1.getY(), vec1.getZ());
         vec2 = new Vec4d((int) vec2.getX(), (int) vec2.getY(), vec2.getZ());
@@ -229,6 +307,56 @@ public class Graphics {
             vec = vec.add(dv);
         }
         return vectors;
+    }
+
+    public void drawText(Vec4d[] points, Vec3d[] texels, Vec4d[] lights, Vec4d[] views, BufferedImage texture, BufferedImage nm, BufferedImage rm) {
+        List<Vec4d> points1 = getDrawableVectors(points[0], points[1]);
+        List<Vec4d> points2 = getDrawableVectors(points[1], points[2]);
+        List<Vec4d> points3 = getDrawableVectors(points[0], points[2]);
+        double du1 = (texels[1].getU() - texels[0].getU()) / points1.size();
+        double dv1 = (texels[1].getV() - texels[0].getV()) / points1.size();
+        double du2 = (texels[2].getU() - texels[1].getU()) / points2.size();
+        double dv2 = (texels[2].getV() - texels[1].getV()) / points2.size();
+        double du3 = (texels[2].getU() - texels[0].getU()) / points3.size();
+        double dv3 = (texels[2].getV() - texels[0].getV()) / points3.size();
+        Vec4d dl1 = lights[1].sub(lights[0]).divide(points1.size());
+        Vec4d dl2 = lights[2].sub(lights[1]).divide(points2.size());
+        Vec4d dl3 = lights[2].sub(lights[0]).divide(points3.size());
+        Vec4d dView1 = views[1].sub(views[0]).divide(points1.size());
+        Vec4d dView2 = views[2].sub(views[1]).divide(points2.size());
+        Vec4d dView3 = views[2].sub(views[0]).divide(points3.size());
+        int index = 0;
+        for (Vec4d vec : points1) {
+            double u1 = texels[0].getU() + du1 * index;
+            double u2 = texels[0].getU() + du3 * index;
+            double v1 = texels[0].getV() + dv1 * index;
+            double v2 = texels[0].getV() + dv3 * index;
+            Vec4d l1 = lights[0].add(dl1.multiply(index));
+            Vec4d l2 = lights[0].add(dl3.multiply(index));
+            Vec4d view1 = views[0].add(dView1.multiply(index));
+            Vec4d view2 = views[0].add(dView3.multiply(index));
+            Vec3d t1 = new Vec3d(u1, v1);
+            Vec3d t2 = new Vec3d(u2, v2);
+            line(vec, points3.get(index), l1, l2, view1, view2, t1, t2, texture, nm, rm);
+            index++;
+        }
+        index--;
+        int index2 = 0;
+        for (Vec4d vec : points2) {
+            double u1 = texels[1].getU() + du2 * index2;
+            double v1 = texels[1].getV() + dv2 * index2;
+            double u2 = texels[0].getU() + du3 * index;
+            double v2 = texels[0].getV() + dv3 * index;
+            Vec4d l1 = lights[1].add(dl2.multiply(index2));
+            Vec4d l2 = lights[0].add(dl3.multiply(index));
+            Vec4d view1 = views[1].add(dView2.multiply(index));
+            Vec4d view2 = views[0].add(dView3.multiply(index));
+            Vec3d t1 = new Vec3d(u1, v1);
+            Vec3d t2 = new Vec3d(u2, v2);
+            line(vec, points3.get(index), l1, l2, view1, view2, t1, t2, texture, nm, rm);
+            index++;
+            index2++;
+        }
     }
 
     public void rasterTriangle(Triangle triangle, Color color) {

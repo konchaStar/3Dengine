@@ -75,4 +75,8 @@ public class Triangle {
     public Vec4d[] getNormals() {
         return normals;
     }
+
+    public Vec3d[] getTextures() {
+        return textures;
+    }
 }

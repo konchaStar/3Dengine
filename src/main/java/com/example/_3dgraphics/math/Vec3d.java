@@ -3,8 +3,6 @@ package com.example._3dgraphics.math;
 public class Vec3d {
     private double u;
     private double v;
-    private double w = 1;
-
     public Vec3d(double u, double v) {
         this.u = u;
         this.v = v;

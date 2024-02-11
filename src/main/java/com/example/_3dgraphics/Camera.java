@@ -1,10 +1,7 @@
 package com.example._3dgraphics;
 
 import com.example._3dgraphics.graphics.Graphics;
-import com.example._3dgraphics.math.Triangle;
-import com.example._3dgraphics.math.Vec4d;
-import com.example._3dgraphics.math.Matrix4x4;
-import com.example._3dgraphics.math.Plane;
+import com.example._3dgraphics.math.*;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
@@ -58,11 +55,32 @@ public class Camera extends Object3D {
         return new Vec4d(matrix[0][0], matrix[0][1], matrix[0][2]).normalize();
     }
 
-    public void drawText(Mesh mesh, BufferedImage texture) {
+    public void drawText(Mesh mesh, Vec4d light, BufferedImage texture, BufferedImage nm, BufferedImage rm) {
         Matrix4x4 view = getCameraMatrix();
         Matrix4x4 model = mesh.getModelTranslationMatrix();
-        for(Triangle tri : mesh.getTris()) {
-
+        for (Triangle triangle : mesh.getTris()) {
+            Triangle modelTriangle = triangle.multiply(model);
+            double dot = modelTriangle.getNormal().dot(getPosition().sub(modelTriangle.getPoints()[0]).normalize());
+            if (dot > 0) {
+                Triangle viewTriangle = modelTriangle.multiply(view);
+                Triangle projTriangle = viewTriangle.multiply(getProjScale());
+                Integer[] indexes = Arrays.stream(new Integer[]{0, 1, 2})
+                        .sorted(Comparator.comparingInt(i -> (int) projTriangle.getPoints()[i].getY()))
+                        .toArray(Integer[]::new);
+                Vec4d[] vertices = new Vec4d[]{projTriangle.getPoints()[indexes[0]],
+                        projTriangle.getPoints()[indexes[1]],
+                        projTriangle.getPoints()[indexes[2]]};
+                Vec3d[] texels = new Vec3d[]{triangle.getTextures()[indexes[0]],
+                        triangle.getTextures()[indexes[1]],
+                        triangle.getTextures()[indexes[2]]};
+                Vec4d[] lights = new Vec4d[]{light.sub(modelTriangle.getPoints()[indexes[0]]),
+                        light.sub(modelTriangle.getPoints()[indexes[1]]),
+                        light.sub(modelTriangle.getPoints()[indexes[2]])};
+                Vec4d[] views = new Vec4d[]{modelTriangle.getPoints()[indexes[0]].sub(position),
+                        modelTriangle.getPoints()[indexes[1]].sub(position),
+                        modelTriangle.getPoints()[indexes[2]].sub(position)};
+                graphics.drawText(vertices, texels, lights, views, texture, nm, rm);
+            }
         }
     }
 
