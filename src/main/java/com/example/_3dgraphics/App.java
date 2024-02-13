@@ -24,7 +24,7 @@ public class App extends JComponent implements ActionListener, KeyListener, Mous
     private double angle = 0;
     private Camera camera;
     private Robot input;
-    private Vec4d light = new Vec4d(-1, 1, 0);
+    private Vec4d light = new Vec4d(1, 1, 0);
     private BufferedImage dm;
     private BufferedImage nm;
     private BufferedImage rm;
@@ -32,6 +32,7 @@ public class App extends JComponent implements ActionListener, KeyListener, Mous
     public static void main(String[] args) throws IOException, AWTException {
         BufferedImage buffer = new BufferedImage(WINDOW_WIDTH + 1, WINDOW_HEIGHT + 1, BufferedImage.TYPE_INT_RGB);
         App app = new App();
+        app.init(buffer);
         frame = new JFrame();
         frame.setVisible(true);
         frame.setDefaultCloseOperation(frame.EXIT_ON_CLOSE);
@@ -40,7 +41,6 @@ public class App extends JComponent implements ActionListener, KeyListener, Mous
         frame.add(app);
         frame.addKeyListener(app);
         frame.addMouseWheelListener(app);
-        app.init(buffer);
     }
 
     private void init(BufferedImage buffer) throws IOException, AWTException {
@@ -55,23 +55,61 @@ public class App extends JComponent implements ActionListener, KeyListener, Mous
         dm = ImageIO.read(new File("maps/african_head_diffuse.png"));
         rm = ImageIO.read(new File("maps/african_head_spec.png"));
         nm = ImageIO.read(new File("maps/african_head_nm.png"));
+        flipHor(dm, false);
+        flipVert(dm, false);
+        flipHor(rm, false);
+        flipVert(rm, false);
+        flipHor(nm, true);
+        flipVert(nm, true);
         input.mouseMove(WINDOW_WIDTH / 2, WINDOW_HEIGHT / 2);
         timer = new Timer(5, this);
         timer.start();
     }
 
+    private void flipHor(BufferedImage image, boolean nm) {
+        for (int i = 0; i < image.getHeight() / 2; i++) {
+            for (int j = 0; j < image.getWidth(); j++) {
+                Color color1 = new Color(image.getRGB(j, i));
+                Color color2 = new Color(image.getRGB(j, image.getHeight() - 1 - i));
+//                if (nm) {
+//                    color1 = new Color(color1.getRed(), 255 - color1.getGreen(), color1.getBlue());
+//                    color2 = new Color(color2.getRed(), 255- color2.getGreen(), color2.getBlue());
+//                }
+                image.setRGB(j, i, color2.getRGB());
+                image.setRGB(j, image.getHeight() - 1 - i, color1.getRGB());
+            }
+        }
+    }
+
+    private void flipVert(BufferedImage image, boolean nm) {
+        for (int i = 0; i < image.getWidth() / 2; i++) {
+            for (int j = 0; j < image.getHeight(); j++) {
+                Color color1 = new Color(image.getRGB(i, j));
+                Color color2 = new Color(image.getRGB(image.getWidth() - 1 - i, j));
+                if (nm) {
+                    color1 = new Color(255 - color1.getRed(), color1.getGreen(), color1.getBlue());
+                    color2 = new Color(255 - color2.getRed(), color2.getGreen(), color2.getBlue());
+                }
+                image.setRGB(i, j, color2.getRGB());
+                image.setRGB(image.getWidth() - 1 - i, j, color1.getRGB());
+            }
+        }
+    }
+
     @Override
     public void paint(java.awt.Graphics g) {
 //        angle += (System.currentTimeMillis() - prev) / 1000.0 * 90;
-        frame.setTitle(String.format("Press esc to exit %d fps", (int) (1000 / (System.currentTimeMillis() - prev))));
+        //frame.setTitle(String.format("Press esc to exit %d fps", (int) (1000 / (System.currentTimeMillis() - prev))));
+        frame.setTitle(String.format("light %.3f %.3f %.3f position %.3f %.3f %.3f", light.getX(), light.getY(), light.getZ(),
+                camera.getPosition().getX(), camera.getPosition().getY(), camera.getPosition().getZ()));
         prev = System.currentTimeMillis();
 //        if (angle > 360) {
 //            angle -= 360;
 //        }
         graphics.clear(new Color(255, 255, 255));
-        //camera.draw(cube, new Color(255, 153, 153), light, true);
-        //camera.phongShading(cube, light, new Color(255, 153, 153));
-        //camera.phongLighting(cube, light, new Color(200, 100, 50), new Color(255, 153, 153), new Color(200, 100, 50));
+//        camera.draw(cube, new Color(255, 153, 153), light, true);
+//        camera.phongShading(cube, light, new Color(255, 153, 153));
+//        camera.phongLighting(cube, light, new Color(128, 70, 70), new Color(255, 153, 153), new Color(255, 200, 200));
         camera.drawText(cube, light, dm, nm, rm);
         g.drawImage(graphics.getBuffer(), 0, 0, null);
     }

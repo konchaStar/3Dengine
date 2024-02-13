@@ -70,16 +70,16 @@ public class Camera extends Object3D {
                 Vec4d[] vertices = new Vec4d[]{projTriangle.getPoints()[indexes[0]],
                         projTriangle.getPoints()[indexes[1]],
                         projTriangle.getPoints()[indexes[2]]};
-                Vec3d[] texels = new Vec3d[]{triangle.getTextures()[indexes[0]],
-                        triangle.getTextures()[indexes[1]],
-                        triangle.getTextures()[indexes[2]]};
+                Vec3d[] texels = new Vec3d[]{projTriangle.getTextures()[indexes[0]],
+                        projTriangle.getTextures()[indexes[1]],
+                        projTriangle.getTextures()[indexes[2]]};
                 Vec4d[] lights = new Vec4d[]{light.sub(modelTriangle.getPoints()[indexes[0]]),
                         light.sub(modelTriangle.getPoints()[indexes[1]]),
                         light.sub(modelTriangle.getPoints()[indexes[2]])};
                 Vec4d[] views = new Vec4d[]{modelTriangle.getPoints()[indexes[0]].sub(position),
                         modelTriangle.getPoints()[indexes[1]].sub(position),
                         modelTriangle.getPoints()[indexes[2]].sub(position)};
-                graphics.drawText(vertices, texels, lights, views, texture, nm, rm);
+                graphics.drawText(mesh.getModel(), vertices, texels, lights, views, texture, nm, rm);
             }
         }
     }

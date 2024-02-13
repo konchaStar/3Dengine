@@ -12,14 +12,19 @@ public class Triangle {
         points[2] = p3;
         for (int i = 0; i < 3; i++) {
             normals[i] = new Vec4d(0, 0, 0);
+            textures[i] = new Vec3d(0, 0);
         }
         calculateNormal();
     }
 
     public Triangle multiply(Matrix4x4 matrix4x4) {
-        Vec4d p1 = points[0].multiply(matrix4x4);
-        Vec4d p2 = points[1].multiply(matrix4x4);
-        Vec4d p3 = points[2].multiply(matrix4x4);
+        Vec3d[] newText = new Vec3d[3];
+        newText[0] = new Vec3d(textures[0].getU(), textures[0].getV(), textures[0].getW());
+        newText[1] = new Vec3d(textures[1].getU(), textures[1].getV(), textures[1].getW());
+        newText[2] = new Vec3d(textures[2].getU(), textures[2].getV(), textures[2].getW());
+        Vec4d p1 = points[0].multiply(matrix4x4, newText[0]);
+        Vec4d p2 = points[1].multiply(matrix4x4, newText[1]);
+        Vec4d p3 = points[2].multiply(matrix4x4, newText[2]);
         double[][] matrix = matrix4x4.getMatrix();
         double x = matrix[3][0];
         double y = matrix[3][1];
@@ -35,6 +40,7 @@ public class Triangle {
         matrix[3][2] = z;
         Triangle triangle = new Triangle(p1, p2, p3);
         triangle.setNormals(n1, n2, n3);
+        triangle.setTextures(newText[0], newText[1], newText[2]);
         return triangle;
     }
 
